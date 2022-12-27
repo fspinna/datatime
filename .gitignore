@@ -209,7 +209,7 @@ ipython_config.py
 .python-version
 
 # drive api
-/datatime/client_secret.json
+/datatime/client_secrets.json
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
