@@ -71,6 +71,7 @@ def datasets_df():
 def cached_datasets_dict(root=None):
     if root is None:
         root = get_project_root() / "cached_datasets"
+    root.mkdir(parents=True, exist_ok=True)
     tasks = sorted([d.name for d in root.iterdir() if d.is_dir()])
     d = dict()
     for task in tasks:
