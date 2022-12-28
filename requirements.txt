@@ -2,3 +2,4 @@ awkward
 numpy
 pandas
 tqdm
+requests
