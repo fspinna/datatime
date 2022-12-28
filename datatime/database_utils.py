@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from datatime.loader import load_classification_dataset, load_regression_dataset, load_forecasting_dataset
-from datatime.main import TimeSeriesDataset, TimeSeriesClassificationDataset, TimeSeriesRegressionDataset, \
+from datatime.main import TimeSeriesClassificationDataset, TimeSeriesRegressionDataset, \
     TimeSeriesForecastingDataset
 from datatime.utils import get_project_root
 
@@ -19,7 +19,11 @@ def datasets_info(names):
     return info_df
 
 
-def dataset_info(d: TimeSeriesDataset):
+def dataset_info(d: Union[
+    TimeSeriesClassificationDataset,
+    TimeSeriesRegressionDataset,
+    TimeSeriesForecastingDataset,
+]):
     if isinstance(d, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = d()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
