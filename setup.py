@@ -15,5 +15,6 @@ setup(
     author="francesco",
     author_email="",
     description="",
-    install_requires=[requirements]
+    install_requires=[requirements],
+    package_data={"datatime": ["database.csv", "gdrive_database.csv"]}
 )
