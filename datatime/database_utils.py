@@ -156,8 +156,8 @@ def load_classification_dataset(
     X_train, X_test = fill_none(X_train, X_test, replace_with=nan_value)
     y_train = np.array(ak.from_json(path / (name + "__y_train.json")))
     y_test = np.array(ak.from_json(path / (name + "__y_test.json")))
-    with open(path / (name + "__labels.json")) as l:
-        labels = {int(key): value for (key, value) in json.load(l).items()}
+    with open(path / (name + "__labels.json")) as out:
+        labels = {int(key): value for (key, value) in json.load(out).items()}
     return X_train, y_train, X_test, y_test, labels
 
 
