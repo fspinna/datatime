@@ -128,5 +128,3 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
 
     def _concatenate_X_Y(self):
         return ak.concatenate([self.X, self.Y], axis=2)
-
-

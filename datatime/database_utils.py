@@ -6,8 +6,11 @@ import numpy as np
 import pandas as pd
 
 from datatime.download_utils import download_dataset
-from datatime.main import TimeSeriesClassificationDataset, TimeSeriesRegressionDataset, \
-    TimeSeriesForecastingDataset
+from datatime.main import (
+    TimeSeriesClassificationDataset,
+    TimeSeriesRegressionDataset,
+    TimeSeriesForecastingDataset,
+)
 from datatime.utils import get_project_root, get_default_dataset_path, fill_none
 
 
@@ -20,11 +23,13 @@ def datasets_info(names):
     return info_df
 
 
-def dataset_info(d: Union[
-    TimeSeriesClassificationDataset,
-    TimeSeriesRegressionDataset,
-    TimeSeriesForecastingDataset,
-]):
+def dataset_info(
+    d: Union[
+        TimeSeriesClassificationDataset,
+        TimeSeriesRegressionDataset,
+        TimeSeriesForecastingDataset,
+    ]
+):
     if isinstance(d, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = d()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
@@ -64,7 +69,11 @@ def dataset_info(d: Union[
 
 
 def datasets_df():
-    df = pd.read_csv(get_project_root() / "database.csv").drop(["file"], axis=1).drop_duplicates()
+    df = (
+        pd.read_csv(get_project_root() / "database.csv")
+        .drop(["file"], axis=1)
+        .drop_duplicates()
+    )
     return df.sort_values(["dataset"])
 
 

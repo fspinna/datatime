@@ -2,6 +2,7 @@ import pathlib
 import awkward as ak
 import numpy as np
 
+
 def get_project_root():
     return pathlib.Path(__file__).parent
 
