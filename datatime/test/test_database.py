@@ -1,30 +1,26 @@
-import unittest
+import pytest
 from datatime.utils import get_project_root
 import pandas as pd
 
 
-class TestDatabase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.database = pd.read_csv(get_project_root() / "database.csv")
-        cls.database_gdrive = pd.read_csv(get_project_root() / "gdrive_database.csv")
+@pytest.fixture
+def databases():
+    database = pd.read_csv(get_project_root() / "database.csv")
+    database_gdrive = pd.read_csv(get_project_root() / "gdrive_database.csv")
+    return database, database_gdrive
 
-    def test_database_match(self):
-        self.assertTrue(
-            self.database.equals(self.database_gdrive.drop(["file_id"], axis=1))
-        )
 
-    def test_no_duplicates(self):
-        self.assertTrue(len(self.database[self.database.duplicated()]) == 0)
-        self.assertTrue(
-            len(
-                self.database_gdrive[
-                    self.database_gdrive.drop(["file_id"], axis=1).duplicated()
-                ]
-            )
-            == 0
-        )
+def test_database_match(databases):
+    database, database_gdrive = databases
+    assert database.equals(database_gdrive.drop(["file_id"], axis=1))
+
+
+def test_no_duplicates(databases):
+    database, database_gdrive = databases
+    assert (len(database[database.duplicated()]) == 0)
+    assert (len(database_gdrive[database_gdrive.drop(["file_id"], axis=1).duplicated()]) == 0)
+
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main()
