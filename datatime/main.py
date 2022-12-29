@@ -1,6 +1,7 @@
 import awkward as ak
 import numpy as np
-from typing import Optional
+from numpy.typing import NDArray
+from typing import Optional, Any
 
 
 class TimeSeriesDataset(object):
@@ -11,22 +12,24 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
     def __init__(
         self,
         X_train: ak.Array,
-        y_train: np.array,
+        y_train: NDArray[Any],
         X_test: ak.Array,
-        y_test: np.array,
-        labels: Optional[dict] = None,
+        y_test: NDArray[Any],
+        labels: Optional[dict[Any, Any]] = None,
         name: str = "",
     ):
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
+        if labels is None:
+            labels = {label: str(label) for label in np.unique(y_train)}
         self.labels = labels
         self.name = name
 
     def __call__(
         self, *args, **kwargs
-    ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
+    ) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
@@ -57,7 +60,7 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
                 )
             )
 
-    def map_labels(self, y: np.array) -> np.array:
+    def map_labels(self, y: NDArray[Any]) -> Any:
         return np.vectorize(self.labels.get)(y)
 
 
@@ -65,9 +68,9 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
     def __init__(
         self,
         X_train: ak.Array,
-        y_train: np.array,
+        y_train: NDArray[Any],
         X_test: ak.Array,
-        y_test: np.array,
+        y_test: NDArray[Any],
         name: str = "",
     ):
         self.X_train = X_train
@@ -78,7 +81,7 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
 
     def __call__(
         self, *args, **kwargs
-    ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
+    ) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:

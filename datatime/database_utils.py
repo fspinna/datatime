@@ -1,6 +1,6 @@
 import json
-from typing import Union
-
+from typing import Union, Any, Optional
+from numpy.typing import NDArray
 import awkward as ak
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ from datatime.main import (
 from datatime.utils import get_project_root, get_default_dataset_path, fill_none
 
 
-def datasets_info(names: list) -> pd.DataFrame:
+def datasets_info(names: list[str]) -> pd.DataFrame:
     info_df = pd.DataFrame()
     for name in names:
         d = load_dataset(name)
@@ -29,7 +29,7 @@ def dataset_info(
         TimeSeriesRegressionDataset,
         TimeSeriesForecastingDataset,
     ]
-) -> dict:
+) -> dict[str, Any]:
     if isinstance(d, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = d()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
@@ -66,6 +66,10 @@ def dataset_info(
             "m_max_test": m_max_test,
             "m_constant_test": m_constant_test,
         }
+    elif isinstance(d, TimeSeriesForecastingDataset):
+        raise Exception(NotImplementedError)
+    else:
+        raise Exception(ValueError)
 
 
 def datasets_df() -> pd.DataFrame:
@@ -77,7 +81,7 @@ def datasets_df() -> pd.DataFrame:
     return df.sort_values(["dataset"])
 
 
-def cached_datasets_dict(root: pathlib.Path = None) -> dict:
+def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> dict[str, list[str]]:
     if root is None:
         root = get_project_root() / "cached_datasets"
     root.mkdir(parents=True, exist_ok=True)
@@ -152,7 +156,7 @@ def load_dataset(
 
 def load_classification_dataset(
     name: str, nan_value: float = np.nan, origin="gdrive"
-) -> tuple[ak.Array, np.array, ak.Array, np.array, dict]:
+) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], dict[int, str]]:
     path = get_default_dataset_path(dataset_name=name, task="classification")
 
     if not is_cached(dataset_name=name, task="classification"):
@@ -170,7 +174,7 @@ def load_classification_dataset(
 
 def load_regression_dataset(
     name: str, nan_value: float = np.nan, origin="gdrive"
-) -> tuple[ak.Array, np.array, ak.Array, np.array]:
+) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
     path = get_default_dataset_path(dataset_name=name, task="regression")
 
     if not is_cached(dataset_name=name, task="regression"):
