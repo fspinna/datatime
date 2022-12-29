@@ -24,10 +24,10 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         self.labels = labels
         self.name = name
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> tuple[ak.Array, np.array, ak.Array, np.array]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return (
                 "Dataset Name: %s\nTask: classification\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel "
@@ -55,7 +55,7 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
                 )
             )
 
-    def map_labels(self, y):
+    def map_labels(self, y: np.array) -> np.array:
         return np.vectorize(self.labels.get)(y)
 
 
@@ -74,10 +74,10 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
         self.y_test = y_test
         self.name = name
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> tuple[ak.Array, np.array, ak.Array, np.array]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return (
                 "Dataset Name: %s\nTask: regression\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s"
@@ -109,10 +109,10 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
         self.XY = self._concatenate_X_Y()
         self.name = name
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> tuple[ak.Array, ak.Array]:
         return self.X, self.Y
 
-    def __str__(self):
+    def __str__(self) -> str:
         try:
             return "Dataset Name: %s\nTask: forecasting\nX: %s\nY: %s" % (
                 self.name,
@@ -126,5 +126,5 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
                 self.Y.type,
             )
 
-    def _concatenate_X_Y(self):
+    def _concatenate_X_Y(self) -> ak.Array:
         return ak.concatenate([self.X, self.Y], axis=2)

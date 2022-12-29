@@ -4,7 +4,7 @@ from typing import Union
 import awkward as ak
 import numpy as np
 import pandas as pd
-
+import pathlib
 from datatime.download_utils import download_dataset
 from datatime.main import (
     TimeSeriesClassificationDataset,
@@ -14,7 +14,7 @@ from datatime.main import (
 from datatime.utils import get_project_root, get_default_dataset_path, fill_none
 
 
-def datasets_info(names):
+def datasets_info(names: list) -> pd.DataFrame:
     info_df = pd.DataFrame()
     for name in names:
         d = load_dataset(name)
@@ -24,12 +24,12 @@ def datasets_info(names):
 
 
 def dataset_info(
-    d: Union[
-        TimeSeriesClassificationDataset,
-        TimeSeriesRegressionDataset,
-        TimeSeriesForecastingDataset,
-    ]
-):
+        d: Union[
+            TimeSeriesClassificationDataset,
+            TimeSeriesRegressionDataset,
+            TimeSeriesForecastingDataset,
+        ]
+) -> dict:
     if isinstance(d, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = d()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
@@ -68,7 +68,7 @@ def dataset_info(
         }
 
 
-def datasets_df():
+def datasets_df() -> pd.DataFrame:
     df = (
         pd.read_csv(get_project_root() / "database.csv")
         .drop(["file"], axis=1)
@@ -77,7 +77,7 @@ def datasets_df():
     return df.sort_values(["dataset"])
 
 
-def cached_datasets_dict(root=None):
+def cached_datasets_dict(root: pathlib.Path = None) -> dict:
     if root is None:
         root = get_project_root() / "cached_datasets"
     root.mkdir(parents=True, exist_ok=True)
@@ -89,7 +89,7 @@ def cached_datasets_dict(root=None):
     return d
 
 
-def is_cached(dataset_name, task):
+def is_cached(dataset_name: str, task: str) -> bool:
     d = cached_datasets_dict()
     if task not in d:
         return False
@@ -99,7 +99,7 @@ def is_cached(dataset_name, task):
         return False
 
 
-def X_info(X: ak.Array):
+def X_info(X: ak.Array) -> tuple[int, int, int, int, bool]:
     m_max = ak.max(ak.ravel(ak.count(X, axis=2)))
     m_min = ak.min(ak.ravel(ak.count(X, axis=2)))
     k = len(X[0])
@@ -109,12 +109,19 @@ def X_info(X: ak.Array):
 
 
 def load_dataset(
-    name: str, nan_value: float = np.nan
+        name: str, nan_value: float = np.nan
 ) -> Union[
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
 ]:
+    """
+    Load a time series dataset.
+
+    :param name: The name of the dataset to load.
+    :param nan_value: The value that represents a missing value.
+    :return: A TimeSeriesDataset object.
+    """
     d = datasets_df()
     dataset_type = d[d["dataset"] == name]["task"].values[0]
     if dataset_type == "classification":
@@ -144,7 +151,7 @@ def load_dataset(
 
 
 def load_classification_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
+        name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, np.array, ak.Array, np.array, dict]:
     path = get_default_dataset_path(dataset_name=name, task="classification")
 
@@ -162,7 +169,7 @@ def load_classification_dataset(
 
 
 def load_regression_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
+        name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
     path = get_default_dataset_path(dataset_name=name, task="regression")
 
@@ -178,7 +185,7 @@ def load_regression_dataset(
 
 
 def load_forecasting_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
+        name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, ak.Array]:
     path = get_default_dataset_path(dataset_name=name, task="forecasting")
 

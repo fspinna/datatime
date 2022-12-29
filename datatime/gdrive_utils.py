@@ -9,7 +9,7 @@ URL = "https://docs.google.com/uc?export=download"
 GDRIVE_DATABASE = pd.read_csv(get_project_root() / "gdrive_database.csv")
 
 
-def download_file_from_google_drive(id, destination):
+def download_file_from_google_drive(id: str, destination: str) -> None:
     def get_confirm_token(response):
         for key, value in response.cookies.items():
             if key.startswith("download_warning"):
@@ -35,6 +35,6 @@ def download_file_from_google_drive(id, destination):
     save_response_content(response, destination)
 
 
-def get_id_to_download_gdrive(dataset_name):
+def get_id_to_download_gdrive(dataset_name: str) -> pd.DataFrame:
     df = GDRIVE_DATABASE[GDRIVE_DATABASE["dataset"] == dataset_name]
     return df

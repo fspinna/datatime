@@ -12,13 +12,13 @@ from datatime.github_utils import (
 from datatime.utils import get_project_root
 
 
-def download_dataset(name, origin):
+def download_dataset(name: str, origin: str) -> None:
     if origin == "gdrive":
         to_download = get_id_to_download_gdrive(dataset_name=name)
     elif origin == "github":
         to_download = get_id_to_download_github(dataset_name=name)
     else:
-        raise
+        raise Exception(NotImplementedError)
     destination = (
         get_project_root()
         / "cached_datasets"
@@ -41,4 +41,4 @@ def download_dataset(name, origin):
             with open(to_download.iloc[i]["file"], "w", encoding="utf8") as json_file:
                 json.dump(json_content, json_file)  # FIXME: did not test if this works
     else:
-        raise
+        raise Exception(NotImplementedError)
