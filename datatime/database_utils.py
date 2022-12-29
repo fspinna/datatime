@@ -24,11 +24,11 @@ def datasets_info(names: list) -> pd.DataFrame:
 
 
 def dataset_info(
-        d: Union[
-            TimeSeriesClassificationDataset,
-            TimeSeriesRegressionDataset,
-            TimeSeriesForecastingDataset,
-        ]
+    d: Union[
+        TimeSeriesClassificationDataset,
+        TimeSeriesRegressionDataset,
+        TimeSeriesForecastingDataset,
+    ]
 ) -> dict:
     if isinstance(d, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = d()
@@ -109,7 +109,7 @@ def X_info(X: ak.Array) -> tuple[int, int, int, int, bool]:
 
 
 def load_dataset(
-        name: str, nan_value: float = np.nan
+    name: str, nan_value: float = np.nan
 ) -> Union[
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
@@ -151,7 +151,7 @@ def load_dataset(
 
 
 def load_classification_dataset(
-        name: str, nan_value: float = np.nan, origin="gdrive"
+    name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, np.array, ak.Array, np.array, dict]:
     path = get_default_dataset_path(dataset_name=name, task="classification")
 
@@ -169,7 +169,7 @@ def load_classification_dataset(
 
 
 def load_regression_dataset(
-        name: str, nan_value: float = np.nan, origin="gdrive"
+    name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
     path = get_default_dataset_path(dataset_name=name, task="regression")
 
@@ -185,7 +185,7 @@ def load_regression_dataset(
 
 
 def load_forecasting_dataset(
-        name: str, nan_value: float = np.nan, origin="gdrive"
+    name: str, nan_value: float = np.nan, origin="gdrive"
 ) -> tuple[ak.Array, ak.Array]:
     path = get_default_dataset_path(dataset_name=name, task="forecasting")
 

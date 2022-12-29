@@ -24,7 +24,9 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         self.labels = labels
         self.name = name
 
-    def __call__(self, *args, **kwargs) -> tuple[ak.Array, np.array, ak.Array, np.array]:
+    def __call__(
+        self, *args, **kwargs
+    ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
@@ -74,7 +76,9 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
         self.y_test = y_test
         self.name = name
 
-    def __call__(self, *args, **kwargs) -> tuple[ak.Array, np.array, ak.Array, np.array]:
+    def __call__(
+        self, *args, **kwargs
+    ) -> tuple[ak.Array, np.array, ak.Array, np.array]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
