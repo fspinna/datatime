@@ -1,7 +1,7 @@
 # datatime
 
 ![Tests](https://github.com/fspinna/datatime/actions/workflows/tests.yml/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/shap/badge/?version=latest)](https://datatime.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/datatime/badge/?version=latest)](https://datatime.readthedocs.io/en/latest/?badge=latest)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ## How to install
