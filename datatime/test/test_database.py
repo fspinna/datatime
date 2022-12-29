@@ -17,9 +17,11 @@ def test_database_match(databases):
 
 def test_no_duplicates(databases):
     database, database_gdrive = databases
-    assert (len(database[database.duplicated()]) == 0)
-    assert (len(database_gdrive[database_gdrive.drop(["file_id"], axis=1).duplicated()]) == 0)
-
+    assert len(database[database.duplicated()]) == 0
+    assert (
+        len(database_gdrive[database_gdrive.drop(["file_id"], axis=1).duplicated()])
+        == 0
+    )
 
 
 if __name__ == "__main__":
