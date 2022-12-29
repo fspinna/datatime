@@ -2,3 +2,4 @@ black
 sphinx
 sphinx-rtd-theme
 mock
+pytest
