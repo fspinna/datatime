@@ -59,4 +59,11 @@ def awkward_to_sktime(*args: ak.Array) -> list[pd.DataFrame]:
 
 
 if __name__ == "__main__":
-    pass
+    SIGNAL_LENGTH_1 = 10
+    X = ak.Array(
+        [
+            [np.arange(SIGNAL_LENGTH_1), np.arange(SIGNAL_LENGTH_1)],
+            [np.arange(SIGNAL_LENGTH_1), np.arange(SIGNAL_LENGTH_1)],
+        ]
+    )
+    X_ts = _awkward_to_tslearn(X)
