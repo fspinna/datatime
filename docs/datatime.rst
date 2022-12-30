@@ -4,6 +4,22 @@ datatime package
 Submodules
 ----------
 
+datatime.classes module
+-----------------------
+
+.. automodule:: datatime.classes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+datatime.conversion module
+--------------------------
+
+.. automodule:: datatime.conversion
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 datatime.database\_utils module
 -------------------------------
 
@@ -32,14 +48,6 @@ datatime.github\_utils module
 -----------------------------
 
 .. automodule:: datatime.github_utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-datatime.main module
---------------------
-
-.. automodule:: datatime.main
    :members:
    :undoc-members:
    :show-inheritance:

@@ -26,7 +26,7 @@ def _awkward_to_pyts(X: ak.Array) -> NDArray[Any]:
     assert has_equal_length_signals(
         X
     ), "Pyts only supports time series having equal length."
-    return np.squeeze(X.to_numpy(), axis=1)
+    return np.asarray(np.squeeze(X.to_numpy(), axis=1))
 
 
 def _awkward_to_tslearn(X: ak.Array) -> NDArray[Any]:
