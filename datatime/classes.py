@@ -1,7 +1,7 @@
 import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
-from typing import Optional, Any
+from typing import Optional, Any, Dict, Tuple
 
 
 class TimeSeriesDataset(object):
@@ -15,7 +15,7 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         y_train: NDArray[Any],
         X_test: ak.Array,
         y_test: NDArray[Any],
-        labels: Optional[dict[Any, Any]] = None,
+        labels: Optional[Dict[Any, Any]] = None,
         name: str = "",
     ):
         self.X_train = X_train
@@ -29,7 +29,7 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
 
     def __call__(
         self, *args, **kwargs
-    ) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
+    ) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
@@ -81,7 +81,7 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
 
     def __call__(
         self, *args, **kwargs
-    ) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
+    ) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
@@ -116,7 +116,7 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
         self.XY = self._concatenate_X_Y()
         self.name = name
 
-    def __call__(self, *args, **kwargs) -> tuple[ak.Array, ak.Array]:
+    def __call__(self, *args, **kwargs) -> Tuple[ak.Array, ak.Array]:
         return self.X, self.Y
 
     def __str__(self) -> str:

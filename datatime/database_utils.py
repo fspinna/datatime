@@ -1,5 +1,5 @@
 import json
-from typing import Union, Any, Optional
+from typing import Union, Any, Optional, List, Tuple, Dict
 from numpy.typing import NDArray
 import awkward as ak
 import numpy as np
@@ -14,7 +14,7 @@ from datatime.classes import (
 from datatime.utils import get_project_root, get_default_dataset_path, fill_none
 
 
-def datasets_info(names: list[str]) -> pd.DataFrame:
+def datasets_info(names: List[str]) -> pd.DataFrame:
     info_df = pd.DataFrame()
     for name in names:
         d = load_dataset(name)
@@ -29,7 +29,7 @@ def dataset_info(
         TimeSeriesRegressionDataset,
         TimeSeriesForecastingDataset,
     ]
-) -> dict[str, Any]:
+) -> Dict[str, Any]:
     if isinstance(dataset, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = dataset()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
@@ -72,7 +72,7 @@ def dataset_info(
         raise Exception(ValueError)
 
 
-def datasets_table(tasks: Optional[list[str]] = None) -> pd.DataFrame:
+def datasets_table(tasks: Optional[List[str]] = None) -> pd.DataFrame:
     df = (
         pd.read_csv(get_project_root() / "database.csv")
         .drop(["file"], axis=1)
@@ -84,11 +84,11 @@ def datasets_table(tasks: Optional[list[str]] = None) -> pd.DataFrame:
         return df[df["task"].isin(tasks)].sort_values(["dataset"])
 
 
-def datasets_list(tasks: Optional[list[str]] = None):
+def datasets_list(tasks: Optional[List[str]] = None):
     return datasets_table(tasks=tasks)["dataset"].to_list()
 
 
-def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> dict[str, list[str]]:
+def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> Dict[str, List[str]]:
     if root is None:
         root = get_project_root() / "cached_datasets"
     root.mkdir(parents=True, exist_ok=True)
@@ -110,7 +110,7 @@ def is_cached(dataset_name: str, task: str) -> bool:
         return False
 
 
-def X_info(X: ak.Array) -> tuple[int, int, int, int, bool]:
+def X_info(X: ak.Array) -> Tuple[int, int, int, int, bool]:
     m_max = ak.max(ak.ravel(ak.count(X, axis=2)))
     m_min = ak.min(ak.ravel(ak.count(X, axis=2)))
     k = len(X[0])
@@ -163,7 +163,7 @@ def load_dataset(
 
 def load_classification_dataset(
     name: str, nan_value: float = np.nan, origin="gdrive"
-) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], dict[int, str]]:
+) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], Dict[int, str]]:
     path = get_default_dataset_path(dataset_name=name, task="classification")
 
     if not is_cached(dataset_name=name, task="classification"):
@@ -181,7 +181,7 @@ def load_classification_dataset(
 
 def load_regression_dataset(
     name: str, nan_value: float = np.nan, origin="gdrive"
-) -> tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
+) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
     path = get_default_dataset_path(dataset_name=name, task="regression")
 
     if not is_cached(dataset_name=name, task="regression"):
@@ -197,7 +197,7 @@ def load_regression_dataset(
 
 def load_forecasting_dataset(
     name: str, nan_value: float = np.nan, origin="gdrive"
-) -> tuple[ak.Array, ak.Array]:
+) -> Tuple[ak.Array, ak.Array]:
     path = get_default_dataset_path(dataset_name=name, task="forecasting")
 
     if not is_cached(dataset_name=name, task="forecasting"):

@@ -1,13 +1,14 @@
 import pathlib
 import awkward as ak
 import numpy as np
+from typing import List
 
 
 def get_project_root() -> pathlib.Path:
     return pathlib.Path(__file__).parent
 
 
-def fill_none(*args: ak.Array, replace_with: float = np.nan) -> list[ak.Array]:
+def fill_none(*args: ak.Array, replace_with: float = np.nan) -> List[ak.Array]:
     return [ak.fill_none(X, replace_with) for X in args]
 
 
