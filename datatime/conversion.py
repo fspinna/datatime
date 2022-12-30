@@ -22,8 +22,10 @@ def has_equal_length_signals(X: ak.Array) -> bool:
 
 
 def _awkward_to_pyts(X: ak.Array) -> NDArray[Any]:
-    assert is_univariate(X)
-    assert has_equal_length_signals(X)
+    assert is_univariate(X), "Pyts only supports univariate time series."
+    assert has_equal_length_signals(
+        X
+    ), "Pyts only supports time series having equal length."
     return np.squeeze(X.to_numpy(), axis=1)
 
 
@@ -33,12 +35,14 @@ def _awkward_to_tslearn(X: ak.Array) -> NDArray[Any]:
 
 
 def _awkward_to_sktime(X: ak.Array) -> pd.DataFrame:
-    assert has_same_number_of_signals(X)
-    X_numpy = X.to_numpy()
+    assert has_same_number_of_signals(X), (
+        "Sktime only supports multivariate time series having an equal number of "
+        "signals."
+    )
     df = pd.DataFrame()
-    n, k, m = X.shape
-    for (j,) in range(k):
-        df[j] = [pd.Series(X_numpy[instance, j, :]) for instance in range(n)]
+    n, k = len(X), len(X[0])
+    for j in range(k):
+        df[str(j)] = [pd.Series(X[i, j, :].to_numpy()) for i in range(n)]
     return df
 
 
@@ -52,3 +56,7 @@ def awkward_to_tslearn(*args: ak.Array) -> list[NDArray[Any]]:
 
 def awkward_to_sktime(*args: ak.Array) -> list[pd.DataFrame]:
     return [_awkward_to_sktime(X) for X in args]
+
+
+if __name__ == "__main__":
+    pass
