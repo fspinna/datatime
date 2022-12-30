@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 from datatime.download_utils import download_dataset
-from datatime.main import (
+from datatime.classes import (
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
@@ -24,14 +24,14 @@ def datasets_info(names: list[str]) -> pd.DataFrame:
 
 
 def dataset_info(
-    d: Union[
+    dataset: Union[
         TimeSeriesClassificationDataset,
         TimeSeriesRegressionDataset,
         TimeSeriesForecastingDataset,
     ]
 ) -> dict[str, Any]:
-    if isinstance(d, TimeSeriesClassificationDataset):
-        X_train, y_train, X_test, y_test = d()
+    if isinstance(dataset, TimeSeriesClassificationDataset):
+        X_train, y_train, X_test, y_test = dataset()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
         n_test, k_test, m_max_test, m_min_test, m_constant_test = X_info(X_test)
         n_labels_train = len(np.unique(y_train))
@@ -50,8 +50,8 @@ def dataset_info(
             "m_constant_test": m_constant_test,
             "n_labels_test": n_labels_test,
         }
-    elif isinstance(d, TimeSeriesRegressionDataset):
-        X_train, y_train, X_test, y_test = d()
+    elif isinstance(dataset, TimeSeriesRegressionDataset):
+        X_train, y_train, X_test, y_test = dataset()
         n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
         n_test, k_test, m_max_test, m_min_test, m_constant_test = X_info(X_test)
         return {
@@ -66,19 +66,26 @@ def dataset_info(
             "m_max_test": m_max_test,
             "m_constant_test": m_constant_test,
         }
-    elif isinstance(d, TimeSeriesForecastingDataset):
+    elif isinstance(dataset, TimeSeriesForecastingDataset):
         raise Exception(NotImplementedError)
     else:
         raise Exception(ValueError)
 
 
-def datasets_df() -> pd.DataFrame:
+def datasets_table(tasks: Optional[list[str]] = None) -> pd.DataFrame:
     df = (
         pd.read_csv(get_project_root() / "database.csv")
         .drop(["file"], axis=1)
         .drop_duplicates()
     )
-    return df.sort_values(["dataset"])
+    if tasks is None:
+        return df.sort_values(["dataset"])
+    else:
+        return df[df["task"].isin(tasks)].sort_values(["dataset"])
+
+
+def datasets_list(tasks: Optional[list[str]] = None):
+    return datasets_table(tasks=tasks)["dataset"].to_list()
 
 
 def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> dict[str, list[str]]:
@@ -126,7 +133,7 @@ def load_dataset(
     :param nan_value: The value that represents a missing value.
     :return: A TimeSeriesDataset object.
     """
-    d = datasets_df()
+    d = datasets_table()
     dataset_type = d[d["dataset"] == name]["task"].values[0]
     if dataset_type == "classification":
         X_train, y_train, X_test, y_test, labels = load_classification_dataset(
