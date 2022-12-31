@@ -2,9 +2,10 @@ import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
+from utils import map_labels, shape
 
 
-class TimeSeriesDataset(object):
+class TimeSeriesDataset:
     pass
 
 
@@ -33,35 +34,21 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
-        try:
-            return (
-                "Dataset Name: %s\nTask: classification\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel "
-                "Encoding: %s"
-                % (
-                    self.name,
-                    np.array(self.X_train).shape,
-                    np.array(self.X_test).shape,
-                    self.y_train.shape,
-                    self.y_test.shape,
-                    self.labels,
-                )
+        return (
+            "Dataset Name: %s\nTask: classification\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel "
+            "Encoding: %s"
+            % (
+                self.name,
+                shape(self.X_train),
+                shape(self.X_test),
+                self.y_train.shape,
+                self.y_test.shape,
+                self.labels,
             )
-        except ValueError:
-            return (
-                "Dataset Name: %s\nTask: classification\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel "
-                "Encoding: %s"
-                % (
-                    self.name,
-                    self.X_train.type,
-                    self.X_test.type,
-                    self.y_train.shape,
-                    self.y_test.shape,
-                    self.labels,
-                )
-            )
+        )
 
     def map_labels(self, y: NDArray[Any]) -> Any:
-        return np.vectorize(self.labels.get)(y)
+        return map_labels(y=y, labels=self.labels)
 
 
 class TimeSeriesRegressionDataset(TimeSeriesDataset):
@@ -85,53 +72,36 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
-        try:
-            return (
-                "Dataset Name: %s\nTask: regression\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s"
-                % (
-                    self.name,
-                    np.array(self.X_train).shape,
-                    np.array(self.X_test).shape,
-                    self.y_train.shape,
-                    self.y_test.shape,
-                )
+        return (
+            "Dataset Name: %s\nTask: regression\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s"
+            % (
+                self.name,
+                shape(self.X_train),
+                shape(self.X_test),
+                self.y_train.shape,
+                self.y_test.shape,
             )
-        except ValueError:
-            return (
-                "Dataset Name: %s\nTask: regression\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s"
-                % (
-                    self.name,
-                    self.X_train.type,
-                    self.X_test.type,
-                    self.y_train.shape,
-                    self.y_test.shape,
-                )
-            )
+        )
 
 
 class TimeSeriesForecastingDataset(TimeSeriesDataset):
     def __init__(self, X: ak.Array, Y: ak.Array, name: str = ""):
         self.X = X
         self.Y = Y
-        self.XY = self._concatenate_X_Y()
+        self.XY_ = None
         self.name = name
 
     def __call__(self, *args, **kwargs) -> Tuple[ak.Array, ak.Array]:
         return self.X, self.Y
 
     def __str__(self) -> str:
-        try:
-            return "Dataset Name: %s\nTask: forecasting\nX: %s\nY: %s" % (
-                self.name,
-                np.array(self.X).shape,
-                np.array(self.Y).shape,
-            )
-        except ValueError:
-            return "Dataset Name: %s\nTask: forecasting\nX: %s\nY: %s" % (
-                self.name,
-                self.X.type,
-                self.Y.type,
-            )
+        return "Dataset Name: %s\nTask: forecasting\nX: %s\nY: %s" % (
+            self.name,
+            shape(self.X),
+            shape(self.Y),
+        )
 
-    def _concatenate_X_Y(self) -> ak.Array:
-        return ak.concatenate([self.X, self.Y], axis=2)
+    def XY(self) -> ak.Array:
+        if self.XY_ is None:
+            self.XY_ = ak.concatenate([self.X, self.Y], axis=2)
+        return self.XY_
