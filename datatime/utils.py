@@ -2,7 +2,7 @@ import pathlib
 import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
-from typing import List, Any, Dict, Tuple, Union
+from typing import List, Any, Dict, Tuple
 
 
 def get_project_root() -> pathlib.Path:
@@ -26,10 +26,4 @@ def shape(X: ak.Array) -> Tuple:
 
 
 if __name__ == "__main__":
-    X = ak.Array(
-        [
-            [np.arange(20), np.arange(20)],
-            [np.arange(20), np.arange(20)],
-        ]
-    )
-    print(shape(X))
+    pass

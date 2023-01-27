@@ -7,9 +7,9 @@ from datatime.conversion import (
     is_univariate,
     is_multivariate,
     has_equal_length_signals,
-    _awkward_to_pyts,
-    _awkward_to_sktime,
-    _awkward_to_tslearn,
+    awkward_to_pyts,
+    awkward_to_sktime,
+    awkward_to_tslearn,
 )
 
 SIGNAL_LENGTH_1 = 10
@@ -142,7 +142,7 @@ def test_has_equal_length_signals(test_input, expected):
     ],
 )
 def test__awkward_to_pyts_conversion(test_input, expected):
-    X_pyts = _awkward_to_pyts(test_input)
+    X_pyts = awkward_to_pyts(test_input)
     assert np.all(X_pyts == expected)
 
 
@@ -152,7 +152,7 @@ def test__awkward_to_pyts_conversion(test_input, expected):
 )
 def test__awkward_to_pyts_exception(test_input):
     with pytest.raises(Exception):
-        _awkward_to_pyts(test_input)
+        awkward_to_pyts(test_input)
 
 
 @pytest.mark.parametrize(
@@ -162,7 +162,7 @@ def test__awkward_to_pyts_exception(test_input):
     ],
 )
 def test__awkward_to_sktime_conversion(test_input, expected):
-    X_sktime = _awkward_to_sktime(test_input)
+    X_sktime = awkward_to_sktime(test_input)
     for i in range(len(expected)):
         for j in range(len(expected.columns)):
             assert np.all(X_sktime.iloc[i, j].values == expected.iloc[i, j].values)
@@ -175,7 +175,7 @@ def test__awkward_to_sktime_conversion(test_input, expected):
     ],
 )
 def test__awkward_to_tslearn_conversion(test_input, expected):
-    X_tslearn = _awkward_to_tslearn(test_input)
+    X_tslearn = awkward_to_tslearn(test_input)
     assert np.all(X_tslearn == expected)
 
 
@@ -185,7 +185,7 @@ def test__awkward_to_tslearn_conversion(test_input, expected):
 )
 def test__awkward_to_tslearn_exception(test_input):
     with pytest.raises(Exception):
-        _awkward_to_tslearn(test_input)
+        awkward_to_tslearn(test_input)
 
 
 if __name__ == "__main__":

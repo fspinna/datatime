@@ -2,7 +2,7 @@ import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
-from utils import map_labels, shape
+from datatime.utils import map_labels, shape
 
 
 class TimeSeriesDataset:
