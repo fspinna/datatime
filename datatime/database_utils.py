@@ -32,8 +32,22 @@ def dataset_info(
 ) -> Dict[str, Any]:
     if isinstance(dataset, TimeSeriesClassificationDataset):
         X_train, y_train, X_test, y_test = dataset()
-        n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
-        n_test, k_test, m_max_test, m_min_test, m_constant_test = X_info(X_test)
+        (
+            n_train,
+            k_train,
+            m_max_train,
+            m_min_train,
+            m_constant_train,
+            missing_values_train,
+        ) = X_info(X_train)
+        (
+            n_test,
+            k_test,
+            m_max_test,
+            m_min_test,
+            m_constant_test,
+            missing_values_test,
+        ) = X_info(X_test)
         n_labels_train = len(np.unique(y_train))
         n_labels_test = len(np.unique(y_test))
         return {
@@ -48,12 +62,33 @@ def dataset_info(
             "m_min_test": m_min_test,
             "m_max_test": m_max_test,
             "m_constant_test": m_constant_test,
+            # FIXME: m_constant does not consider constant train and test but with different lengths w.r.t each other
+            "m_constant": m_constant_train and m_constant_test,
             "n_labels_test": n_labels_test,
+            "missing_values_train": missing_values_train,
+            "missing_values_test": missing_values_test,
+            "missing_values": missing_values_train or missing_values_test,
+            "m_constant_no_missing": (m_constant_train and m_constant_test)
+            and not (missing_values_train or missing_values_test),
         }
     elif isinstance(dataset, TimeSeriesRegressionDataset):
         X_train, y_train, X_test, y_test = dataset()
-        n_train, k_train, m_max_train, m_min_train, m_constant_train = X_info(X_train)
-        n_test, k_test, m_max_test, m_min_test, m_constant_test = X_info(X_test)
+        (
+            n_train,
+            k_train,
+            m_max_train,
+            m_min_train,
+            m_constant_train,
+            missing_values_train,
+        ) = X_info(X_train)
+        (
+            n_test,
+            k_test,
+            m_max_test,
+            m_min_test,
+            m_constant_test,
+            missing_values_test,
+        ) = X_info(X_test)
         return {
             "n_train": n_train,
             "k_train": k_train,
@@ -65,6 +100,12 @@ def dataset_info(
             "m_min_test": m_min_test,
             "m_max_test": m_max_test,
             "m_constant_test": m_constant_test,
+            "m_constant": m_constant_train and m_constant_test,
+            "missing_values_train": missing_values_train,
+            "missing_values_test": missing_values_test,
+            "missing_values": missing_values_train or missing_values_test,
+            "m_constant_no_missing": (m_constant_train and m_constant_test)
+            and not (missing_values_train or missing_values_test),
         }
     elif isinstance(dataset, TimeSeriesForecastingDataset):
         raise Exception(NotImplementedError)
@@ -110,13 +151,14 @@ def is_cached(dataset_name: str, task: str) -> bool:
         return False
 
 
-def X_info(X: ak.Array) -> Tuple[int, int, int, int, bool]:
+def X_info(X: ak.Array) -> Tuple[int, int, int, int, bool, bool]:
     m_max = ak.max(ak.ravel(ak.count(X, axis=2)))
     m_min = ak.min(ak.ravel(ak.count(X, axis=2)))
     k = len(X[0])
     n = len(X)
     m_constant = m_max == m_min
-    return n, k, m_max, m_min, m_constant
+    missing_values = np.any(np.isnan(ak.ravel(X)))
+    return n, k, m_max, m_min, m_constant, missing_values
 
 
 def load_dataset(
