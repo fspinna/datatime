@@ -2,6 +2,7 @@
 import requests
 import pandas as pd
 from datatime.utils import get_project_root
+from tqdm import tqdm
 
 
 CHUNK_SIZE = 32768
@@ -19,7 +20,7 @@ def download_file_from_google_drive(id: str, destination: str) -> None:
 
     def save_response_content(response, destination):
         with open(destination, "wb") as f:
-            for chunk in response.iter_content(CHUNK_SIZE):
+            for chunk in tqdm(response.iter_content(CHUNK_SIZE)):
                 if chunk:  # filter out keep-alive new chunks
                     f.write(chunk)
 
