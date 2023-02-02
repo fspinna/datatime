@@ -10,6 +10,7 @@ from datatime.classes import (
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
+    TimeSeriesMultioutputDataset,
 )
 from datatime.utils import get_project_root, get_default_dataset_path, fill_none
 
@@ -167,6 +168,7 @@ def load_dataset(
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
+    TimeSeriesMultioutputDataset,
 ]:
     """
     Load a time series dataset.
@@ -199,6 +201,13 @@ def load_dataset(
     elif dataset_type == "forecasting":
         X, Y = load_forecasting_dataset(name, nan_value=nan_value)
         return TimeSeriesForecastingDataset(X=X, Y=Y, name=name)
+    elif dataset_type == "multioutput":
+        X_train, Y_train, X_test, Y_test = load_multioutput_dataset(
+            name, nan_value=nan_value
+        )
+        return TimeSeriesMultioutputDataset(
+            X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test, name=name
+        )
     else:
         raise ValueError("Dataset type not implemented.")
 
@@ -249,3 +258,19 @@ def load_forecasting_dataset(
     Y = ak.from_json(path / (name + "__Y.json"))
     X, Y = fill_none(X, Y, replace_with=nan_value)
     return X, Y
+
+
+def load_multioutput_dataset(
+    name: str, nan_value: float = np.nan, origin="gdrive"
+) -> Tuple[ak.Array, pd.DataFrame, ak.Array, pd.DataFrame]:
+    path = get_default_dataset_path(dataset_name=name, task="multioutput")
+
+    if not is_cached(dataset_name=name, task="multioutput"):
+        download_dataset(name=name, origin=origin)
+
+    X_train = ak.from_json(path / (name + "__X_train.json"))
+    X_test = ak.from_json(path / (name + "__X_test.json"))
+    X_train, X_test = fill_none(X_train, X_test, replace_with=nan_value)
+    Y_train = pd.read_csv(path / (name + "__Y_train.csv"))
+    Y_test = pd.read_csv(path / (name + "__Y_test.csv"))
+    return X_train, Y_train, X_test, Y_test
