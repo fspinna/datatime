@@ -1,5 +1,6 @@
 import awkward as ak
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
 from datatime.utils import map_labels, shape
@@ -105,3 +106,52 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
         if self.XY_ is None:
             self.XY_ = ak.concatenate([self.X, self.Y], axis=2)
         return self.XY_
+
+
+class TimeSeriesMultioutputDataset(TimeSeriesDataset):
+    def __init__(
+        self,
+        X_train: ak.Array,
+        Y_train: pd.DataFrame,
+        X_test: ak.Array,
+        Y_test: pd.DataFrame,
+        name: str = "",
+    ):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.Y_train = Y_train
+        self.Y_test = Y_test
+        self.name = name
+
+        self.X_ = None
+        self.Y_ = None
+
+    def __call__(
+        self, *args, **kwargs
+    ) -> Tuple[ak.Array, pd.DataFrame, ak.Array, pd.DataFrame]:
+        return self.X_train, self.Y_train, self.X_test, self.Y_test
+
+    def __str__(self) -> str:
+        return (
+            "Dataset Name: %s\nTask: multioutput\nX_train: %s\nX_test: %s\nY_train: %s\nY_test: %s"
+            % (
+                self.name,
+                shape(self.X_train),
+                shape(self.X_test),
+                self.Y_train.shape,
+                self.Y_test.shape,
+            )
+        )
+
+    def X(self) -> ak.Array:
+        if self.X_ is None:
+            self.X_ = ak.concatenate([self.X_train, self.X_test], axis=0)
+        return self.X_
+
+    def Y(self) -> pd.DataFrame:
+        if self.Y_ is None:
+            self.Y_ = pd.concat([self.Y_train, self.Y_test], axis=0)
+        return self.Y_
+
+    def XY(self) -> Tuple[ak.Array, pd.DataFrame]:
+        return self.X(), self.Y()
