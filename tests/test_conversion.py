@@ -10,10 +10,13 @@ from datatime.conversion import (
     awkward_to_pyts,
     awkward_to_sktime,
     awkward_to_tslearn,
+    sktime_to_awkward,
+    awkward_to_flat,
 )
 
 SIGNAL_LENGTH_1 = 10
 SIGNAL_LENGTH_2 = 20
+SIGNAL_LENGTH_3 = 11
 
 # time series dataset with one time series containing one element
 UNIVARIATE_SINGLETON = ak.Array([[[1]]])
@@ -67,20 +70,26 @@ MULTIVARIATE_DIFFERENT_NUMBER_OF_SIGNALS = ak.Array(
 MULTIVARIATE_DIFFERENT_SIGNAL_LENGTH = ak.Array(
     [
         [np.arange(SIGNAL_LENGTH_1), np.arange(SIGNAL_LENGTH_2)],
-        [np.arange(SIGNAL_LENGTH_2), np.arange(SIGNAL_LENGTH_1)],
+        [np.arange(SIGNAL_LENGTH_3), np.arange(SIGNAL_LENGTH_1)],
     ]
 )
 MULTIVARIATE_EXPECTED_SKTIME = pd.DataFrame(
     {
         "0": [
             pd.Series(np.arange(SIGNAL_LENGTH_1)),
-            pd.Series(np.arange(SIGNAL_LENGTH_2)),
+            pd.Series(np.arange(SIGNAL_LENGTH_3)),
         ],
         "1": [
             pd.Series(np.arange(SIGNAL_LENGTH_2)),
             pd.Series(np.arange(SIGNAL_LENGTH_1)),
         ],
     }
+)
+MULTIVARIATE_EXPECTED_FLAT = ak.Array(
+    [
+        np.concatenate([np.arange(SIGNAL_LENGTH_1), np.arange(SIGNAL_LENGTH_2)]),
+        np.concatenate([np.arange(SIGNAL_LENGTH_3), np.arange(SIGNAL_LENGTH_1)]),
+    ]
 )
 
 
@@ -171,6 +180,17 @@ def test__awkward_to_sktime_conversion(test_input, expected):
 @pytest.mark.parametrize(
     "test_input,expected",
     [
+        (MULTIVARIATE_EXPECTED_SKTIME, MULTIVARIATE_DIFFERENT_SIGNAL_LENGTH),
+    ],
+)
+def test__sktime_to_awkward_conversion(test_input, expected):
+    X = sktime_to_awkward(test_input)
+    assert ak.all(X == expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
         (MULTIVARIATE_SAME_NUMBER_OF_SIGNALS, MULTIVARIATE_EXPECTED_TSLEARN),
     ],
 )
@@ -186,6 +206,15 @@ def test__awkward_to_tslearn_conversion(test_input, expected):
 def test__awkward_to_tslearn_exception(test_input):
     with pytest.raises(Exception):
         awkward_to_tslearn(test_input)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [(MULTIVARIATE_DIFFERENT_SIGNAL_LENGTH, MULTIVARIATE_EXPECTED_FLAT)],
+)
+def test__awkward_to_flat_conversion(test_input, expected):
+    X_flat = awkward_to_flat(test_input)
+    assert np.all(X_flat == expected)
 
 
 if __name__ == "__main__":
