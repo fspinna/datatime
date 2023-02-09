@@ -19,4 +19,7 @@ Chang Wei Tan, Christoph Bergmeir, Francois Petitjean, & Geoffrey I Webb. (2020)
 ### [Monash Time Series Forecasting Repository](https://forecastingdata.org/)
 Godahewa, R., Bergmeir, C., Webb, G. I., Hyndman, R. J., & Montero-Manso, P. (2021). Monash time series forecasting archive. arXiv preprint arXiv:2105.06643.
 
+### [The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS)](https://zenodo.org/record/1188976)
+Livingstone SR, Russo FA (2018) The Ryerson Audio-Visual Database of Emotional Speech and Song (RAVDESS): A dynamic, multimodal set of facial and vocal expressions in North American English. PLoS ONE 13(5): e0196391.
+
 
