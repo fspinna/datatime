@@ -40,11 +40,28 @@ def awkward_to_sktime(X: ak.Array) -> pd.DataFrame:
     assert has_same_number_of_signals(
         X
     ), "Sktime only supports multivariate time series having an equal number of signals."
-    df = pd.DataFrame()
+    df = dict()  # pd.DataFrame()
     n, k = len(X), len(X[0])
     for j in range(k):
         df[str(j)] = [pd.Series(X[i, j, :].to_numpy()) for i in range(n)]
-    return df
+    return pd.DataFrame(df)
+
+
+def sktime_to_awkward(X: pd.DataFrame) -> ak.Array:
+    builder = ak.ArrayBuilder()
+    for row in range(X.shape[0]):
+        builder.begin_list()
+        for column in range(X.shape[1]):
+            builder.begin_list()
+            for value in X.iloc[row, column]:
+                builder.real(value)
+            builder.end_list()
+        builder.end_list()
+    return builder.snapshot()
+
+
+def awkward_to_flat(X: ak.Array) -> ak.Array:
+    return ak.flatten(X, axis=2)
 
 
 if __name__ == "__main__":
