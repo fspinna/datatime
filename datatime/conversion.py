@@ -29,6 +29,10 @@ def awkward_to_pyts(X: ak.Array) -> NDArray[Any]:
     return np.asarray(np.squeeze(X.to_numpy(), axis=1))
 
 
+def pyts_to_awkward(X: NDArray) -> ak.Array:
+    return ak.Array(X[:, np.newaxis, :])
+
+
 def awkward_to_tslearn(X: ak.Array) -> NDArray[Any]:
     assert has_equal_length_signals(
         X
