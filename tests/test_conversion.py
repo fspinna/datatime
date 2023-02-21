@@ -12,6 +12,7 @@ from datatime.conversion import (
     awkward_to_tslearn,
     sktime_to_awkward,
     awkward_to_flat,
+    pyts_to_awkward,
 )
 
 SIGNAL_LENGTH_1 = 10
@@ -141,6 +142,18 @@ def test_is_multivariate(test_input, expected):
 )
 def test_has_equal_length_signals(test_input, expected):
     assert has_equal_length_signals(test_input) == expected
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        (UNIVARIATE_EXPECTED_PYTS, UNIVARIATE_SAME_NUMBER_OF_SIGNALS),
+        (UNIVARIATE_SINGLETON_EXPECTED_PYTS, UNIVARIATE_SINGLETON),
+    ],
+)
+def test__pyts_to_awkward_conversion(test_input, expected):
+    X = pyts_to_awkward(test_input)
+    assert np.array_equal(X, expected)
 
 
 @pytest.mark.parametrize(
