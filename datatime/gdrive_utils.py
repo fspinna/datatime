@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 
 CHUNK_SIZE = 32768
-URL = "https://docs.google.com/uc?export=download"
+URL = "https://docs.google.com/uc?export=download&confirm"
 GDRIVE_DATABASE = pd.read_csv(get_project_root() / "gdrive_database.csv")
 
 
