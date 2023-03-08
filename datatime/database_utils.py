@@ -109,7 +109,41 @@ def dataset_info(
             and not (missing_values_train or missing_values_test),
         }
     elif isinstance(dataset, TimeSeriesForecastingDataset):
-        raise Exception(NotImplementedError)
+        X, Y = dataset()
+        (
+            n_X,
+            k_X,
+            m_max_X,
+            m_min_X,
+            m_constant_X,
+            missing_values_X,
+        ) = X_info(X)
+        (
+            n_Y,
+            k_Y,
+            m_max_Y,
+            m_min_Y,
+            m_constant_Y,
+            missing_values_Y,
+        ) = X_info(Y)
+        return {
+            "n_X": n_X,
+            "k_X": k_X,
+            "m_min_X": m_min_X,
+            "m_max_X": m_max_X,
+            "m_constant_X": m_constant_X,
+            "n_Y": n_Y,
+            "k_Y": k_Y,
+            "m_min_Y": m_min_Y,
+            "m_max_Y": m_max_Y,
+            "m_constant_Y": m_constant_Y,
+            "m_constant": m_constant_X and m_constant_Y,
+            "missing_values_X": missing_values_X,
+            "missing_values_Y": missing_values_Y,
+            "missing_values": missing_values_X or missing_values_Y,
+            "m_constant_no_missing": (m_constant_X and m_constant_Y)
+            and not (missing_values_X or missing_values_Y),
+        }
     else:
         raise Exception(ValueError)
 
