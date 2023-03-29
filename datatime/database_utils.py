@@ -300,12 +300,17 @@ def load_forecasting_dataset(
 
 
 def load_multioutput_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
+    name: str,
+    nan_value: float = np.nan,
+    origin="gdrive",
+    path: Optional[str] = None,
 ) -> Tuple[ak.Array, pd.DataFrame, ak.Array, pd.DataFrame]:
-    path = get_default_dataset_path(dataset_name=name, task="multioutput")
-
-    if not is_cached(dataset_name=name, task="multioutput"):
-        download_dataset(name=name, origin=origin)
+    if path is None:
+        path = get_default_dataset_path(dataset_name=name, task="multioutput")
+        if not is_cached(dataset_name=name, task="multioutput"):
+            download_dataset(name=name, origin=origin)
+    else:
+        path = pathlib.Path(path)
 
     X_train = ak.from_json(path / (name + "__X_train.json"))
     X_test = ak.from_json(path / (name + "__X_test.json"))
