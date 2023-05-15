@@ -304,7 +304,9 @@ def load_multioutput_dataset(
     nan_value: float = np.nan,
     origin="gdrive",
     path: Optional[str] = None,
-) -> Tuple[ak.Array, pd.DataFrame, ak.Array, pd.DataFrame]:
+    load_train: bool = True,
+    load_test: bool = True,
+) -> Tuple[Union[ak.Array, None], pd.DataFrame, Union[ak.Array, None], pd.DataFrame]:
     if path is None:
         path = get_default_dataset_path(dataset_name=name, task="multioutput")
         if not is_cached(dataset_name=name, task="multioutput"):
@@ -312,9 +314,17 @@ def load_multioutput_dataset(
     else:
         path = pathlib.Path(path)
 
-    X_train = ak.from_json(path / (name + "__X_train.json"))
-    X_test = ak.from_json(path / (name + "__X_test.json"))
-    X_train, X_test = fill_none(X_train, X_test, replace_with=nan_value)
+    if load_train:
+        X_train = ak.from_json(path / (name + "__X_train.json"))
+        X_train = fill_none(X_train, replace_with=nan_value)
+    else:
+        X_train = None
+    if load_test:
+        X_test = ak.from_json(path / (name + "__X_test.json"))
+        X_test = fill_none(X_test, replace_with=nan_value)
+    else:
+        X_test = None
+
     Y_train = pd.read_csv(path / (name + "__Y_train.csv"))
     Y_test = pd.read_csv(path / (name + "__Y_test.csv"))
     return X_train, Y_train, X_test, Y_test
