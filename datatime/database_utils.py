@@ -316,12 +316,12 @@ def load_multioutput_dataset(
 
     if load_train:
         X_train = ak.from_json(path / (name + "__X_train.json"))
-        X_train = fill_none(X_train, replace_with=nan_value)
+        X_train = fill_none(X_train, replace_with=nan_value)[0]
     else:
         X_train = None
     if load_test:
         X_test = ak.from_json(path / (name + "__X_test.json"))
-        X_test = fill_none(X_test, replace_with=nan_value)
+        X_test = fill_none(X_test, replace_with=nan_value)[0]
     else:
         X_test = None
 
