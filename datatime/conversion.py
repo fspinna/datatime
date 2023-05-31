@@ -40,6 +40,10 @@ def awkward_to_tslearn(X: ak.Array) -> NDArray[Any]:
     return np.swapaxes(X.to_numpy(), 1, 2)
 
 
+def tslearn_to_awkward(X: NDArray) -> ak.Array:
+    return ak.Array(np.swapaxes(X, 1, 2))
+
+
 def awkward_to_sktime(X: ak.Array) -> pd.DataFrame:
     assert has_same_number_of_signals(
         X

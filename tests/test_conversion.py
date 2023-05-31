@@ -13,6 +13,7 @@ from datatime.conversion import (
     sktime_to_awkward,
     awkward_to_flat,
     pyts_to_awkward,
+    tslearn_to_awkward,
 )
 
 SIGNAL_LENGTH_1 = 10
@@ -210,6 +211,17 @@ def test__sktime_to_awkward_conversion(test_input, expected):
 def test__awkward_to_tslearn_conversion(test_input, expected):
     X_tslearn = awkward_to_tslearn(test_input)
     assert np.all(X_tslearn == expected)
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        (MULTIVARIATE_EXPECTED_TSLEARN, MULTIVARIATE_SAME_NUMBER_OF_SIGNALS),
+    ],
+)
+def test__tslearn_to_awkward_conversion(test_input, expected):
+    X_awkward = tslearn_to_awkward(test_input)
+    assert ak.all(X_awkward == expected)
 
 
 @pytest.mark.parametrize(
