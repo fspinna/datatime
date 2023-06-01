@@ -1,4 +1,4 @@
-# datatime
+# downtime
 
 ![Tests](https://github.com/fspinna/datatime/actions/workflows/tests.yml/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/datatime/badge/?version=latest)](https://datatime.readthedocs.io/en/latest/?badge=latest)

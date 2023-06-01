@@ -3,13 +3,13 @@ requires = ["setuptools>=42.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--cov=datatime"
+addopts = "--cov=downtime"
 testpaths = [
     "tests",
 ]
 
 [tool.mypy]
-mypy_path = "datatime"
+mypy_path = "downtime"
 check_untyped_defs = true
 disallow_any_generics = true
 ignore_missing_imports = true
