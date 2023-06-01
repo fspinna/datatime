@@ -1,5 +1,5 @@
 import pytest
-from datatime.utils import get_project_root
+from downtime.utils import get_project_root
 import pandas as pd
 
 

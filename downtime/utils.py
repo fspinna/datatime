@@ -3,7 +3,7 @@ import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
 from typing import List, Any, Dict, Tuple
-from datatime.config import CACHE_FOLDER
+from downtime.config import CACHE_FOLDER
 
 
 def get_project_root() -> pathlib.Path:

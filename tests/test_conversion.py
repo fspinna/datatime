@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import awkward as ak
 import numpy as np
-from datatime.conversion import (
+from downtime.conversion import (
     has_same_number_of_signals,
     is_univariate,
     is_multivariate,

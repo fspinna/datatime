@@ -1,6 +1,6 @@
 import requests
 
-from datatime.utils import get_project_root
+from downtime.utils import get_project_root
 import pandas as pd
 
 GITHUB_DATABASE = pd.read_csv(get_project_root() / "database.csv")

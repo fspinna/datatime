@@ -6,15 +6,15 @@ import numpy as np
 import pandas as pd
 import pathlib
 
-from datatime.config import CACHE_FOLDER
-from datatime.download_utils import download_dataset
-from datatime.classes import (
+from downtime.config import CACHE_FOLDER
+from downtime.download_utils import download_dataset
+from downtime.classes import (
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
     TimeSeriesMultioutputDataset,
 )
-from datatime.utils import get_project_root, get_default_dataset_path, fill_none
+from downtime.utils import get_project_root, get_default_dataset_path, fill_none
 
 
 def datasets_info(names: List[str]) -> pd.DataFrame:

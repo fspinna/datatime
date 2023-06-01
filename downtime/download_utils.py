@@ -1,16 +1,16 @@
 import json
 
-from datatime.gdrive_utils import (
+from downtime.gdrive_utils import (
     get_id_to_download_gdrive,
     download_file_from_google_drive,
 )
-from datatime.github_utils import (
+from downtime.github_utils import (
     get_id_to_download_github,
     get_raw_file_dataset_url_github,
     download_raw_file_from_github,
 )
-from datatime.utils import get_project_root
-from datatime.config import CACHE_FOLDER
+from downtime.utils import get_project_root
+from downtime.config import CACHE_FOLDER
 
 
 def download_dataset(name: str, origin: str) -> None:

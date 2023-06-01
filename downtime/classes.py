@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
-from datatime.utils import map_labels, shape
+from downtime.utils import map_labels, shape
 
 
 class TimeSeriesDataset:
