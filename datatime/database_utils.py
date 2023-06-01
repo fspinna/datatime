@@ -5,6 +5,8 @@ import awkward as ak
 import numpy as np
 import pandas as pd
 import pathlib
+
+from datatime.config import CACHE_FOLDER
 from datatime.download_utils import download_dataset
 from datatime.classes import (
     TimeSeriesClassificationDataset,
@@ -166,7 +168,7 @@ def datasets_list(tasks: Optional[List[str]] = None):
 
 def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> Dict[str, List[str]]:
     if root is None:
-        root = get_project_root() / "cached_datasets"
+        root = CACHE_FOLDER
     root.mkdir(parents=True, exist_ok=True)
     tasks = sorted([d.name for d in root.iterdir() if d.is_dir()])
     d = dict()

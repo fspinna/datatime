@@ -10,6 +10,7 @@ from datatime.github_utils import (
     download_raw_file_from_github,
 )
 from datatime.utils import get_project_root
+from datatime.config import CACHE_FOLDER
 
 
 def download_dataset(name: str, origin: str) -> None:
@@ -20,10 +21,7 @@ def download_dataset(name: str, origin: str) -> None:
     else:
         raise Exception(NotImplementedError)
     destination = (
-        get_project_root()
-        / "cached_datasets"
-        / to_download.iloc[0]["task"]
-        / to_download.iloc[0]["dataset"]
+        CACHE_FOLDER / to_download.iloc[0]["task"] / to_download.iloc[0]["dataset"]
     )
     destination.mkdir(parents=True, exist_ok=True)
     if origin == "gdrive":

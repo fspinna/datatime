@@ -3,6 +3,7 @@ import awkward as ak
 import numpy as np
 from numpy.typing import NDArray
 from typing import List, Any, Dict, Tuple
+from datatime.config import CACHE_FOLDER
 
 
 def get_project_root() -> pathlib.Path:
@@ -14,7 +15,7 @@ def fill_none(*args: ak.Array, replace_with: float = np.nan) -> List[ak.Array]:
 
 
 def get_default_dataset_path(dataset_name: str, task: str) -> pathlib.Path:
-    return pathlib.Path(get_project_root()) / "cached_datasets" / task / dataset_name
+    return CACHE_FOLDER / task / dataset_name
 
 
 def map_labels(y: NDArray[Any], labels: Dict[Any, Any]) -> Any:
