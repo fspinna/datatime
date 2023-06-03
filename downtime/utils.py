@@ -26,5 +26,10 @@ def shape(X: ak.Array) -> Tuple:
     return len(X), ak.num(X, axis=1)[0], tuple(np.unique(ak.num(X, axis=2)))
 
 
+def pretty_shape(X: ak.Array) -> str:
+    n, k, m = shape(X)
+    return f"({n}, {k}, {m[0]})" if len(m) == 1 else f"({n}, {k}, {m[0]}:{m[-1]})"
+
+
 if __name__ == "__main__":
     pass

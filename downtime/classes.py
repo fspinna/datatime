@@ -4,47 +4,53 @@ import pandas as pd
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
 from downtime.utils import map_labels, shape
+from abc import ABC, abstractmethod
+import pprint
 
 
-class TimeSeriesDataset:
+class TimeSeriesDataset(ABC):
     pass
 
 
 class TimeSeriesClassificationDataset(TimeSeriesDataset):
     def __init__(
         self,
-        X_train: ak.Array,
-        y_train: NDArray[Any],
-        X_test: ak.Array,
-        y_test: NDArray[Any],
-        labels: Optional[Dict[Any, Any]] = None,
-        name: str = "",
+        X_train: Optional[ak.Array] = None,
+        y_train: Optional[NDArray[Any]] = None,
+        X_test: Optional[ak.Array] = None,
+        y_test: Optional[NDArray[Any]] = None,
+        metadata: Optional[Dict] = None,
     ):
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        if labels is None:
-            labels = {label: str(label) for label in np.unique(y_train)}
-        self.labels = labels
-        self.name = name
+        self.metadata = metadata
+        self.labels = None
+        if metadata is not None:
+            if "labels" in metadata:
+                self.labels = metadata["labels"]
 
     def __call__(
         self, *args, **kwargs
-    ) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
+    ) -> Tuple[
+        Optional[ak.Array],
+        Optional[NDArray[Any]],
+        Optional[ak.Array],
+        Optional[NDArray[Any]],
+    ]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
         return (
-            "Dataset Name: %s\nTask: classification\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel "
-            "Encoding: %s"
+            "X_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel Encoding: %s\nMetadata:\n%s"
             % (
-                self.name,
-                shape(self.X_train),
-                shape(self.X_test),
-                self.y_train.shape,
-                self.y_test.shape,
-                self.labels,
+                shape(self.X_train) if self.X_train is not None else None,
+                shape(self.X_test) if self.X_test is not None else None,
+                self.y_train.shape if self.y_train is not None else None,
+                self.y_test.shape if self.y_test is not None else None,
+                self.labels if self.labels is not None else None,
+                pprint.pformat(self.metadata) if self.metadata is not None else None,
             )
         )
 
@@ -55,36 +61,39 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
 class TimeSeriesRegressionDataset(TimeSeriesDataset):
     def __init__(
         self,
-        X_train: ak.Array,
-        y_train: NDArray[Any],
-        X_test: ak.Array,
-        y_test: NDArray[Any],
-        name: str = "",
+        X_train: Optional[ak.Array] = None,
+        y_train: Optional[NDArray[Any]] = None,
+        X_test: Optional[ak.Array] = None,
+        y_test: Optional[NDArray[Any]] = None,
+        metadata: Optional[Dict] = None,
     ):
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-        self.name = name
+        self.metadata = metadata
 
     def __call__(
         self, *args, **kwargs
-    ) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
+    ) -> Tuple[
+        Optional[ak.Array],
+        Optional[NDArray[Any]],
+        Optional[ak.Array],
+        Optional[NDArray[Any]],
+    ]:
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
-        return (
-            "Dataset Name: %s\nTask: regression\nX_train: %s\nX_test: %s\ny_train: %s\ny_test: %s"
-            % (
-                self.name,
-                shape(self.X_train),
-                shape(self.X_test),
-                self.y_train.shape,
-                self.y_test.shape,
-            )
+        return "X_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nMetadata:\n%s" % (
+            shape(self.X_train) if self.X_train is not None else None,
+            shape(self.X_test) if self.X_test is not None else None,
+            self.y_train.shape if self.y_train is not None else None,
+            self.y_test.shape if self.y_test is not None else None,
+            pprint.pformat(self.metadata) if self.metadata is not None else None,
         )
 
 
+# TODO: implement this as above
 class TimeSeriesForecastingDataset(TimeSeriesDataset):
     def __init__(self, X: ak.Array, Y: ak.Array, name: str = ""):
         self.X = X
