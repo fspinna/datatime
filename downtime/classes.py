@@ -2,7 +2,8 @@ import awkward as ak
 import pandas as pd
 from numpy.typing import NDArray
 from typing import Optional, Any, Dict, Tuple
-from downtime.utils import map_labels, shape
+from downtime.utils import map_labels, shape, pretty_shape
+from downtime.config import METADATA_LABELS_KEY
 from abc import ABC
 import pprint
 
@@ -27,8 +28,8 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         self.metadata = metadata
         self.labels = None
         if metadata is not None:
-            if "labels" in metadata:
-                self.labels = metadata["labels"]
+            if METADATA_LABELS_KEY in metadata:
+                self.labels = metadata[METADATA_LABELS_KEY]
 
     def __call__(
         self, *args, **kwargs
@@ -41,16 +42,12 @@ class TimeSeriesClassificationDataset(TimeSeriesDataset):
         return self.X_train, self.y_train, self.X_test, self.y_test
 
     def __str__(self) -> str:
-        return (
-            "X_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nLabel Encoding: %s\nMetadata:\n%s"
-            % (
-                shape(self.X_train) if self.X_train is not None else None,
-                shape(self.X_test) if self.X_test is not None else None,
-                self.y_train.shape if self.y_train is not None else None,
-                self.y_test.shape if self.y_test is not None else None,
-                self.labels if self.labels is not None else None,
-                pprint.pformat(self.metadata) if self.metadata is not None else None,
-            )
+        return "X_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nMetadata:\n%s" % (
+            pretty_shape(self.X_train) if self.X_train is not None else None,
+            pretty_shape(self.X_test) if self.X_test is not None else None,
+            self.y_train.shape if self.y_train is not None else None,
+            self.y_test.shape if self.y_test is not None else None,
+            pprint.pformat(self.metadata) if self.metadata is not None else None,
         )
 
     def map_labels(self, y: NDArray[Any]) -> Any:
@@ -84,8 +81,8 @@ class TimeSeriesRegressionDataset(TimeSeriesDataset):
 
     def __str__(self) -> str:
         return "X_train: %s\nX_test: %s\ny_train: %s\ny_test: %s\nMetadata:\n%s" % (
-            shape(self.X_train) if self.X_train is not None else None,
-            shape(self.X_test) if self.X_test is not None else None,
+            pretty_shape(self.X_train) if self.X_train is not None else None,
+            pretty_shape(self.X_test) if self.X_test is not None else None,
             self.y_train.shape if self.y_train is not None else None,
             self.y_test.shape if self.y_test is not None else None,
             pprint.pformat(self.metadata) if self.metadata is not None else None,
@@ -111,8 +108,8 @@ class TimeSeriesForecastingDataset(TimeSeriesDataset):
 
     def __str__(self) -> str:
         return "X: %s\nY: %s\nMetadata:\n%s" % (
-            shape(self.X) if self.X is not None else None,
-            shape(self.Y) if self.Y is not None else None,
+            pretty_shape(self.X) if self.X is not None else None,
+            pretty_shape(self.Y) if self.Y is not None else None,
             pprint.pformat(self.metadata) if self.metadata is not None else None,
         )
 
@@ -152,8 +149,8 @@ class TimeSeriesMultioutputDataset(TimeSeriesDataset):
 
     def __str__(self) -> str:
         return "X_train: %s\nX_test: %s\nY_train: %s\nY_test: %s\nMetadata:\n%s" % (
-            shape(self.X_train) if self.X_train is not None else None,
-            shape(self.X_test) if self.X_test is not None else None,
+            pretty_shape(self.X_train) if self.X_train is not None else None,
+            pretty_shape(self.X_test) if self.X_test is not None else None,
             self.Y_train.shape if self.Y_train is not None else None,
             self.Y_test.shape if self.Y_test is not None else None,
             self.metadata if self.metadata is not None else None,
