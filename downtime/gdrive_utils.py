@@ -2,12 +2,13 @@
 import requests
 import pandas as pd
 from downtime.utils import get_project_root
+from downtime.config import GDRIVE_DATABASE_FILENAME, DATABASE_FOLDER_NAME_COLUMN
 from tqdm import tqdm
 
 
 CHUNK_SIZE = 32768
 URL = "https://docs.google.com/uc?export=download&confirm"
-GDRIVE_DATABASE = pd.read_csv(get_project_root() / "gdrive_database.csv")
+GDRIVE_DATABASE = pd.read_csv(get_project_root() / GDRIVE_DATABASE_FILENAME)
 
 
 def download_file_from_google_drive(id: str, destination: str) -> None:
@@ -37,5 +38,5 @@ def download_file_from_google_drive(id: str, destination: str) -> None:
 
 
 def get_id_to_download_gdrive(dataset_name: str) -> pd.DataFrame:
-    df = GDRIVE_DATABASE[GDRIVE_DATABASE["dataset"] == dataset_name]
+    df = GDRIVE_DATABASE[GDRIVE_DATABASE[DATABASE_FOLDER_NAME_COLUMN] == dataset_name]
     return df
