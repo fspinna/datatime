@@ -1,4 +1,4 @@
-import json
+import yaml
 from typing import Union, Any, Optional, List, Tuple, Dict
 from numpy.typing import NDArray
 import awkward as ak
@@ -6,7 +6,16 @@ import numpy as np
 import pandas as pd
 import pathlib
 
-from downtime.config import CACHE_FOLDER
+from downtime.config import (
+    CACHE_FOLDER,
+    LOCAL_DATABASE_FILENAME,
+    DATABASE_FOLDER_NAME_COLUMN,
+    DATABASE_TASK_COLUMN,
+    DATABASE_FILENAME_COLUMN,
+    DATABASE_FILESIZE_COLUMN,
+    DATABASE_DATASET_NAME_COLUMN,
+    METADATA_TASK_KEY,
+)
 from downtime.download_utils import download_dataset
 from downtime.classes import (
     TimeSeriesClassificationDataset,
@@ -14,238 +23,144 @@ from downtime.classes import (
     TimeSeriesForecastingDataset,
     TimeSeriesMultioutputDataset,
 )
-from downtime.utils import get_project_root, get_default_dataset_path, fill_none
-
-
-def datasets_info(names: List[str]) -> pd.DataFrame:
-    info_df = pd.DataFrame()
-    for name in names:
-        d = load_dataset(name)
-        infos = pd.DataFrame(dataset_info(d), index=[name])
-        info_df = pd.concat([info_df, infos], axis=0)
-    return info_df
-
-
-def dataset_info(
-    dataset: Union[
-        TimeSeriesClassificationDataset,
-        TimeSeriesRegressionDataset,
-        TimeSeriesForecastingDataset,
-    ]
-) -> Dict[str, Any]:
-    if isinstance(dataset, TimeSeriesClassificationDataset):
-        X_train, y_train, X_test, y_test = dataset()
-        (
-            n_train,
-            k_train,
-            m_max_train,
-            m_min_train,
-            m_constant_train,
-            missing_values_train,
-        ) = X_info(X_train)
-        (
-            n_test,
-            k_test,
-            m_max_test,
-            m_min_test,
-            m_constant_test,
-            missing_values_test,
-        ) = X_info(X_test)
-        n_labels_train = len(np.unique(y_train))
-        n_labels_test = len(np.unique(y_test))
-        return {
-            "n_train": n_train,
-            "k_train": k_train,
-            "m_min_train": m_min_train,
-            "m_max_train": m_max_train,
-            "m_constant_train": m_constant_train,
-            "n_labels_train": n_labels_train,
-            "n_test": n_test,
-            "k_test": k_test,
-            "m_min_test": m_min_test,
-            "m_max_test": m_max_test,
-            "m_constant_test": m_constant_test,
-            # FIXME: m_constant does not consider constant train and test but with different lengths w.r.t each other
-            "m_constant": m_constant_train and m_constant_test,
-            "n_labels_test": n_labels_test,
-            "missing_values_train": missing_values_train,
-            "missing_values_test": missing_values_test,
-            "missing_values": missing_values_train or missing_values_test,
-            "m_constant_no_missing": (m_constant_train and m_constant_test)
-            and not (missing_values_train or missing_values_test),
-        }
-    elif isinstance(dataset, TimeSeriesRegressionDataset):
-        X_train, y_train, X_test, y_test = dataset()
-        (
-            n_train,
-            k_train,
-            m_max_train,
-            m_min_train,
-            m_constant_train,
-            missing_values_train,
-        ) = X_info(X_train)
-        (
-            n_test,
-            k_test,
-            m_max_test,
-            m_min_test,
-            m_constant_test,
-            missing_values_test,
-        ) = X_info(X_test)
-        return {
-            "n_train": n_train,
-            "k_train": k_train,
-            "m_min_train": m_min_train,
-            "m_max_train": m_max_train,
-            "m_constant_train": m_constant_train,
-            "n_test": n_test,
-            "k_test": k_test,
-            "m_min_test": m_min_test,
-            "m_max_test": m_max_test,
-            "m_constant_test": m_constant_test,
-            "m_constant": m_constant_train and m_constant_test,
-            "missing_values_train": missing_values_train,
-            "missing_values_test": missing_values_test,
-            "missing_values": missing_values_train or missing_values_test,
-            "m_constant_no_missing": (m_constant_train and m_constant_test)
-            and not (missing_values_train or missing_values_test),
-        }
-    elif isinstance(dataset, TimeSeriesForecastingDataset):
-        X, Y = dataset()
-        (
-            n_X,
-            k_X,
-            m_max_X,
-            m_min_X,
-            m_constant_X,
-            missing_values_X,
-        ) = X_info(X)
-        (
-            n_Y,
-            k_Y,
-            m_max_Y,
-            m_min_Y,
-            m_constant_Y,
-            missing_values_Y,
-        ) = X_info(Y)
-        return {
-            "n_X": n_X,
-            "k_X": k_X,
-            "m_min_X": m_min_X,
-            "m_max_X": m_max_X,
-            "m_constant_X": m_constant_X,
-            "n_Y": n_Y,
-            "k_Y": k_Y,
-            "m_min_Y": m_min_Y,
-            "m_max_Y": m_max_Y,
-            "m_constant_Y": m_constant_Y,
-            "m_constant": m_constant_X and m_constant_Y,
-            "missing_values_X": missing_values_X,
-            "missing_values_Y": missing_values_Y,
-            "missing_values": missing_values_X or missing_values_Y,
-            "m_constant_no_missing": (m_constant_X and m_constant_Y)
-            and not (missing_values_X or missing_values_Y),
-        }
-    else:
-        raise Exception(ValueError)
+from downtime.utils import (
+    get_project_root,
+    get_default_dataset_path,
+    fill_none,
+    load_metadata,
+)
 
 
 def datasets_table(tasks: Optional[List[str]] = None) -> pd.DataFrame:
     df = (
-        pd.read_csv(get_project_root() / "database.csv")
-        .drop(["file"], axis=1)
+        pd.read_csv(get_project_root() / LOCAL_DATABASE_FILENAME)
+        .drop(
+            [
+                DATABASE_FILENAME_COLUMN,
+                DATABASE_FILESIZE_COLUMN,
+                DATABASE_DATASET_NAME_COLUMN,
+            ],
+            axis=1,
+        )
         .drop_duplicates()
     )
     if tasks is None:
-        return df.sort_values(["dataset"])
+        return df.sort_values([DATABASE_FOLDER_NAME_COLUMN])
     else:
-        return df[df["task"].isin(tasks)].sort_values(["dataset"])
+        return df[df[DATABASE_TASK_COLUMN].isin(tasks)].sort_values(
+            [DATABASE_FOLDER_NAME_COLUMN]
+        )
 
 
-def datasets_list(tasks: Optional[List[str]] = None):
-    return datasets_table(tasks=tasks)["dataset"].to_list()
+def datasets_list(tasks: Optional[List[str]] = None) -> List[str]:
+    return datasets_table(tasks=tasks)[DATABASE_FOLDER_NAME_COLUMN].to_list()
 
 
 def cached_datasets_dict(root: Optional[pathlib.Path] = None) -> Dict[str, List[str]]:
     if root is None:
         root = CACHE_FOLDER
     root.mkdir(parents=True, exist_ok=True)
-    tasks = sorted([d.name for d in root.iterdir() if d.is_dir()])
-    d = dict()
-    for task in tasks:
-        datasets = sorted([d.name for d in (root / task).iterdir() if d.is_dir()])
-        d[task] = datasets
-    return d
+    out = dict()
+    folders = sorted([d for d in root.iterdir() if d.is_dir()])
+    for folder in folders:
+        dataset = folder.name
+        with open(folder / (dataset + "__metadata.yaml"), "r") as f:
+            metadata = yaml.load(f, Loader=yaml.FullLoader)
+        task = metadata[METADATA_TASK_KEY]
+        out[dataset] = task
+    return out
 
 
-def is_cached(dataset_name: str, task: str) -> bool:
-    d = cached_datasets_dict()
-    if task not in d:
-        return False
-    if dataset_name in d[task]:
+def cached_datasets_list(root: Optional[pathlib.Path] = None) -> List[str]:
+    if root is None:
+        root = CACHE_FOLDER
+    root.mkdir(parents=True, exist_ok=True)
+    return sorted([d.name for d in root.iterdir() if d.is_dir()])
+
+
+def is_cached(dataset_name: str) -> bool:
+    if dataset_name in cached_datasets_list():
         return True
     else:
         return False
 
 
-def X_info(X: ak.Array) -> Tuple[int, int, int, int, bool, bool]:
-    m_max = ak.max(ak.ravel(ak.count(X, axis=2)))
-    m_min = ak.min(ak.ravel(ak.count(X, axis=2)))
-    k = len(X[0])
-    n = len(X)
-    m_constant = m_max == m_min
-    missing_values = np.any(np.isnan(ak.ravel(X)))
-    return n, k, m_max, m_min, m_constant, missing_values
-
-
 def load_dataset(
-    name: str, nan_value: float = np.nan
+    name: str,
+    nan_value: float = np.nan,
+    origin: str = "gdrive",
+    path: Optional[pathlib.Path] = None,
 ) -> Union[
     TimeSeriesClassificationDataset,
     TimeSeriesRegressionDataset,
     TimeSeriesForecastingDataset,
     TimeSeriesMultioutputDataset,
 ]:
+    # create docstring from the function signature
     """
     Load a time series dataset.
-
     :param name: The name of the dataset to load.
     :param nan_value: The value that represents a missing value.
+    :param origin: The origin of the dataset.
+    :param path: The path to the dataset.
     :return: A TimeSeriesDataset object.
     """
     d = datasets_table()
-    dataset_type = d[d["dataset"] == name]["task"].values[0]
+    dataset_type = d[d[DATABASE_FOLDER_NAME_COLUMN] == name][
+        DATABASE_TASK_COLUMN
+    ].values[0]
     if dataset_type == "classification":
-        X_train, y_train, X_test, y_test, labels = load_classification_dataset(
-            name, nan_value=nan_value
+        X_train, y_train, X_test, y_test, metadata = load_classification_dataset(
+            name, nan_value=nan_value, origin=origin, path=path
         )
         return TimeSeriesClassificationDataset(
             X_train=X_train,
             y_train=y_train,
             X_test=X_test,
             y_test=y_test,
-            labels=labels,
-            name=name,
+            metadata=metadata,
         )
     elif dataset_type == "regression":
-        X_train, y_train, X_test, y_test = load_regression_dataset(
-            name, nan_value=nan_value
+        X_train, y_train, X_test, y_test, metadata = load_regression_dataset(
+            name, nan_value=nan_value, origin=origin, path=path
         )
         return TimeSeriesRegressionDataset(
-            X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, name=name
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
+            metadata=metadata,
         )
     elif dataset_type == "forecasting":
-        X, Y = load_forecasting_dataset(name, nan_value=nan_value)
-        return TimeSeriesForecastingDataset(X=X, Y=Y, name=name)
+        X, Y, metadata = load_forecasting_dataset(
+            name, nan_value=nan_value, origin=origin, path=path
+        )
+        return TimeSeriesForecastingDataset(X=X, Y=Y, metadata=metadata)
     elif dataset_type == "multioutput":
-        X_train, Y_train, X_test, Y_test = load_multioutput_dataset(
-            name, nan_value=nan_value
+        X_train, Y_train, X_test, Y_test, metadata = load_multioutput_dataset(
+            name, nan_value=nan_value, origin=origin, path=path
         )
         return TimeSeriesMultioutputDataset(
-            X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test, name=name
+            X_train=X_train,
+            Y_train=Y_train,
+            X_test=X_test,
+            Y_test=Y_test,
+            metadata=metadata,
         )
     else:
         raise ValueError("Dataset type not implemented.")
+
+
+def get_path(
+    name: str, path: Optional[str] = None, origin: str = "gdrive"
+) -> pathlib.Path:
+    if path is None:
+        path = get_default_dataset_path(dataset_name=name)
+        if not is_cached(dataset_name=name):
+            download_dataset(name=name, origin=origin)
+    else:
+        path = pathlib.Path(path)
+    return path
 
 
 def load_classification_dataset(
@@ -253,52 +168,40 @@ def load_classification_dataset(
     nan_value: float = np.nan,
     origin: str = "gdrive",
     path: Optional[str] = None,
-) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], Dict[int, str]]:
-    if path is None:
-        path = get_default_dataset_path(dataset_name=name, task="classification")
-        if not is_cached(dataset_name=name, task="classification"):
-            download_dataset(name=name, origin=origin)
-    else:
-        path = pathlib.Path(path)
-
+) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], Dict]:
+    path = get_path(name=name, path=path, origin=origin)
     X_train = ak.from_json(path / (name + "__X_train.json"))
     X_test = ak.from_json(path / (name + "__X_test.json"))
     X_train, X_test = fill_none(X_train, X_test, replace_with=nan_value)
     y_train = np.array(ak.from_json(path / (name + "__y_train.json")))
     y_test = np.array(ak.from_json(path / (name + "__y_test.json")))
-    with open(path / (name + "__labels.json")) as out:
-        labels = {int(key): value for (key, value) in json.load(out).items()}
-    return X_train, y_train, X_test, y_test, labels
+    metadata = load_metadata(path=path, name=name)
+    return X_train, y_train, X_test, y_test, metadata
 
 
 def load_regression_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
-) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any]]:
-    path = get_default_dataset_path(dataset_name=name, task="regression")
-
-    if not is_cached(dataset_name=name, task="regression"):
-        download_dataset(name=name, origin=origin)
-
-    X_train = ak.from_json(path / (name + "__X_train.json"))
-    X_test = ak.from_json(path / (name + "__X_test.json"))
-    X_train, X_test = fill_none(X_train, X_test, replace_with=nan_value)
-    y_train = np.array(ak.from_json(path / (name + "__y_train.json")))
-    y_test = np.array(ak.from_json(path / (name + "__y_test.json")))
-    return X_train, y_train, X_test, y_test
+    name: str,
+    nan_value: float = np.nan,
+    origin: str = "gdrive",
+    path: Optional[str] = None,
+) -> Tuple[ak.Array, NDArray[Any], ak.Array, NDArray[Any], Dict]:
+    return load_classification_dataset(
+        name=name, nan_value=nan_value, origin=origin, path=path
+    )
 
 
 def load_forecasting_dataset(
-    name: str, nan_value: float = np.nan, origin="gdrive"
-) -> Tuple[ak.Array, ak.Array]:
-    path = get_default_dataset_path(dataset_name=name, task="forecasting")
-
-    if not is_cached(dataset_name=name, task="forecasting"):
-        download_dataset(name=name, origin=origin)
-
+    name: str,
+    nan_value: float = np.nan,
+    origin: str = "gdrive",
+    path: Optional[str] = None,
+) -> Tuple[ak.Array, ak.Array, Dict]:
+    path = get_path(name=name, path=path, origin=origin)
     X = ak.from_json(path / (name + "__X.json"))
     Y = ak.from_json(path / (name + "__Y.json"))
     X, Y = fill_none(X, Y, replace_with=nan_value)
-    return X, Y
+    metadata = load_metadata(path=path, name=name)
+    return X, Y, metadata
 
 
 def load_multioutput_dataset(
@@ -308,14 +211,11 @@ def load_multioutput_dataset(
     path: Optional[str] = None,
     load_train: bool = True,
     load_test: bool = True,
-) -> Tuple[Union[ak.Array, None], pd.DataFrame, Union[ak.Array, None], pd.DataFrame]:
-    if path is None:
-        path = get_default_dataset_path(dataset_name=name, task="multioutput")
-        if not is_cached(dataset_name=name, task="multioutput"):
-            download_dataset(name=name, origin=origin)
-    else:
-        path = pathlib.Path(path)
-
+) -> Tuple[
+    Union[ak.Array, None], pd.DataFrame, Union[ak.Array, None], pd.DataFrame, Dict
+]:
+    path = get_path(name=name, path=path, origin=origin)
+    metadata = load_metadata(path=path, name=name)
     if load_train:
         X_train = ak.from_json(path / (name + "__X_train.json"))
         X_train = fill_none(X_train, replace_with=nan_value)[0]
@@ -329,4 +229,4 @@ def load_multioutput_dataset(
 
     Y_train = pd.read_csv(path / (name + "__Y_train.csv"))
     Y_test = pd.read_csv(path / (name + "__Y_test.csv"))
-    return X_train, Y_train, X_test, Y_test
+    return X_train, Y_train, X_test, Y_test, metadata
