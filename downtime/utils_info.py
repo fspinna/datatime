@@ -3,6 +3,7 @@ from typing import List, Union, Dict, Any, Tuple
 import awkward as ak
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from downtime import load_dataset
 from downtime.classes import (
@@ -14,7 +15,7 @@ from downtime.classes import (
 
 def datasets_info(names: List[str]) -> pd.DataFrame:
     info_df = pd.DataFrame()
-    for name in names:
+    for name in tqdm(names):
         d = load_dataset(name)
         infos = pd.DataFrame(dataset_info(d), index=[name])
         info_df = pd.concat([info_df, infos], axis=0)
